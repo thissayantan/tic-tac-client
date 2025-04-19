@@ -1,0 +1,56 @@
+# Tic Tac Toe Client Project Tasks
+
+- [x] Set up Next.js project with React 18 (Weight: 2)
+  - [x] Initialize Next.js 15 with TypeScript (Weight: 1)
+  - [x] Configure project structure (Weight: 1)
+  - [x] Add proper .gitignore file (Weight: 1)
+
+- [x] Set up UI components with shadcn (Weight: 3)
+  - [x] Install and configure shadcn (Weight: 1)
+  - [x] Create theme and global styles (Weight: 1)
+  - [x] Set up layout components (Weight: 1)
+
+- [x] Implement game interface (Weight: 4)
+  - [x] Create game board component (Weight: 2)
+  - [x] Implement player controls (Weight: 1)
+  - [x] Add game status display (Weight: 1)
+
+- [x] Implement WebSocket connection to server (Weight: 3)
+  - [x] Set up Socket.io client (Weight: 1)
+  - [x] Implement room joining functionality (Weight: 1)
+  - [x] Handle real-time game updates (Weight: 1)
+
+- [x] Add game state management (Weight: 3)
+  - [x] Set up state management solution (Weight: 1)
+  - [x] Implement game state reducers (Weight: 1)
+  - [x] Connect UI components to state (Weight: 1)
+
+- [x] Add responsive design (Weight: 2)
+  - [x] Optimize UI for mobile devices (Weight: 1)
+  - [x] Add tablet/desktop layouts (Weight: 1)
+
+- [ ] Testing and optimization (Weight: 3)
+  - [ ] Add unit tests for components (Weight: 1)
+  - [ ] Add integration tests (Weight: 1)
+  - [ ] Optimize performance (Weight: 1)
+
+## UX Improvement Requirements (New)
+
+- [ ] Simplify User Onboarding (Weight: 3)
+  - [ ] Remove login/registration system
+  - [ ] Replace with simple name input and avatar selection
+  - [ ] Add animated avatars with sound effects
+  - [ ] Make selected avatar visually distinct (larger size)
+
+- [ ] Improve Game UI/UX (Weight: 4)
+  - [ ] Redesign player profile display as icon in top-left
+    - [ ] Add avatar animation on hover with sound effect
+    - [ ] Add dropdown menu with logout option
+  - [ ] Enhance game status display
+    - [ ] Move game status to right side of board
+    - [ ] Add shareable link functionality for inviting players
+    - [ ] Improve room code display and joining experience
+  - [ ] Fix game join UX issues
+    - [ ] Ensure Join Game button activates correctly with valid room code
+    - [ ] Consolidate redundant Create Game buttons
+    - [ ] Add auto-join flow from shared links
