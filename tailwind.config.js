@@ -1,0 +1,13 @@
+module.exports = {
+  // ...existing code...
+  theme: {
+    extend: {
+      // ...existing code...
+      animation: {
+        'bounce-slow': 'bounce 2s infinite',
+      },
+      // ...existing code...
+    },
+  },
+  // ...existing code...
+};
