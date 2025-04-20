@@ -72,54 +72,50 @@ export function useSocketService() {
       setConnectionError('Unable to connect to the game server');
     });
 
-    // Game-specific events - aligned with server implementation
-    socket.on('player_joined', ({ roomId, playerId, role, opponentName, opponentAvatar, avatarId }) => {
-      console.log(`Joined room: ${roomId}`);
-      setRoomInfo(roomId, playerName, avatarId || 'globe');
-      
-      // Map server's role to client's symbol (X or O)
-      const playerSymbol = role === PLAYER_ROLES.PLAYER_X ? 'X' : 'O';
-      
-      if (opponentName) {
-        setPlayerInfo(playerSymbol, opponentName, opponentAvatar || null);
-      }
-    });
-
-    socket.on('game_started', ({ players, currentPlayer }) => {
-      console.log('Game started', players);
-      // Find my player info in the players array
-      const myPlayer = players.find(p => p.name === playerName);
-      const opponentPlayer = players.find(p => p.name !== playerName);
-      
-      if (myPlayer && opponentPlayer) {
-        const playerSymbol = myPlayer.role === PLAYER_ROLES.PLAYER_X ? 'X' : 'O';
-        setPlayerInfo(playerSymbol, opponentPlayer.name, opponentPlayer.avatarId || null);
-      }
-      
-      // Set current turn
-      if (currentPlayer) {
-        updateTurn(currentPlayer === PLAYER_ROLES.PLAYER_X ? 'X' : 'O');
-      }
-    });
-
-    socket.on('move_made', ({ board, currentTurn }) => {
-      console.log('Game update received', board, currentTurn);
-      updateBoard(board);
-      // Map server's role to client's symbol (X or O)
-      const turn = currentTurn === PLAYER_ROLES.PLAYER_X ? 'X' : 'O';
+    // Handle game start: initialize board, turn, and update status
+    socket.on('game_started', (payload: { players: Record<string, any>; gameState: any; currentPlayer: string }) => {
+      console.log('Game started', payload);
+      // Update opponent info
+      const state = useGameStore.getState();
+      const mySymbol = state.playerSymbol as string;
+      const myRole = mySymbol === 'X' ? PLAYER_ROLES.PLAYER_X : PLAYER_ROLES.PLAYER_O;
+      const opponentRole = myRole === PLAYER_ROLES.PLAYER_X ? PLAYER_ROLES.PLAYER_O : PLAYER_ROLES.PLAYER_X;
+      const opponent = payload.players[opponentRole];
+      setPlayerInfo(mySymbol as any, opponent?.name || null, opponent?.avatar || null);
+      // Update board cells (support raw array or state.cells)
+      const stateObj = payload.gameState;
+      const boardArr = Array.isArray(stateObj) ? stateObj : stateObj.cells;
+      updateBoard(boardArr);
+      // Map currentPlayer to 'X' or 'O'
+      const turn = payload.currentPlayer === PLAYER_ROLES.PLAYER_X ? 'X' : 'O';
       updateTurn(turn);
+      // Set game status to playing
+      updateGameStatus('playing');
     });
 
-    socket.on('game_over', ({ result, board, winner }) => {
-      console.log('Game over:', result);
+    // Handle move updates and use authoritative nextTurn from server
+    socket.on('move_made', (payload: { gameState: any; nextTurn: string }) => {
+      console.log('Move made received', payload);
+      const stateArr = payload.gameState;
+      const board = Array.isArray(stateArr) ? stateArr : stateArr.cells;
       updateBoard(board);
-      
-      const myPlayerSymbol = result.winner === playerName ? 'win' : 'lose';
-      
-      if (result.type === 'win') {
-        updateGameStatus(myPlayerSymbol === 'win' ? 'won' : 'lost');
-      } else {
+      // Use server-provided nextTurn (role) to map to symbol
+      const turnSymbol = payload.nextTurn === PLAYER_ROLES.PLAYER_X ? 'X' : 'O';
+      updateTurn(turnSymbol);
+    });
+
+    socket.on('game_over', (payload: { gameState: any; winner: string; draw: boolean }) => {
+      console.log('Game over payload:', payload);
+      // Extract board matrix (support raw array or state.cells)
+      const stateObj = payload.gameState;
+      const boardArr = Array.isArray(stateObj) ? stateObj : stateObj.cells;
+      updateBoard(boardArr);
+      // Set end-game status
+      if (payload.draw) {
         updateGameStatus('draw');
+      } else {
+        const won = payload.winner === playerName;
+        updateGameStatus(won ? 'won' : 'lost');
       }
     });
     
@@ -169,8 +165,8 @@ export function useSocketService() {
     if (!socket) return;
 
     socket.emit('create_room', { 
-      playerName,
-      avatarId // Custom avatar ID
+      name: playerName,
+      avatar: avatarId // Custom avatar ID
     }, (response: any) => {
       if (response.error) {
         setConnectionError(response.error);
@@ -179,6 +175,11 @@ export function useSocketService() {
       
       console.log('Room created:', response);
       setRoomInfo(response.roomId, playerName, avatarId);
+      // Set own symbol and waiting for opponent
+      const createdSymbol = response.role === PLAYER_ROLES.PLAYER_X ? 'X' : 'O';
+      setPlayerInfo(createdSymbol, null, null);
+      // Remain in waiting state until game_started
+      updateGameStatus('waiting');
     });
   };
 
@@ -189,16 +190,20 @@ export function useSocketService() {
 
     socket.emit('join_room', { 
       roomId, 
-      playerName,
-      avatarId // Custom avatar ID
+      name: playerName,
+      avatar: avatarId // Custom avatar ID
     }, (response: any) => {
       if (response.error) {
         setConnectionError(response.error);
         return;
       }
-      
-      console.log('Joined room:', response);
-      // The player_joined event handler will handle the state updates
+      console.log('Joined room (callback):', response);
+      setRoomInfo(response.roomId, playerName, avatarId);
+      // Determine and store own symbol, waiting for opponent
+      const symbol = response.role === PLAYER_ROLES.PLAYER_X ? 'X' : 'O';
+      setPlayerInfo(symbol, null, null);
+      // Set own symbol, remain waiting until game starts
+      updateGameStatus('waiting');
     });
   };
 
@@ -209,7 +214,7 @@ export function useSocketService() {
 
     const moveSuccessful = makeMove(row, col);
     if (!moveSuccessful) return;
-
+    // Remove optimistic turn flip; rely on server 'move_made' for turn updates
     socket.emit('make_move', { row, col }, (response: any) => {
       if (response.error) {
         console.error('Move error:', response.error);
