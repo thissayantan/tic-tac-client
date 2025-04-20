@@ -103,9 +103,9 @@ export function GameStatus({
           <div className="grid grid-cols-3 gap-4">
             {/* Player */}
             <div className="flex flex-col items-center justify-center">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden mb-2">
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center mb-2">
                 <Image
-                  src={`/${playerAvatar || 'globe'}.svg`}
+                  src={`/avatars/${playerAvatar || 'globe'}.png`}
                   alt="Your avatar"
                   width={36}
                   height={36}
@@ -123,19 +123,21 @@ export function GameStatus({
             
             {/* Opponent */}
             <div className="flex flex-col items-center justify-center">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden mb-2">
-                {opponentAvatar ? (
+              {opponentAvatar ? (
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-pink-400 to-red-600 flex items-center justify-center mb-2">
                   <Image
-                    src={`/${opponentAvatar}.svg`}
+                    src={`/avatars/${opponentAvatar}.png`}
                     alt="Opponent avatar"
                     width={36}
                     height={36}
                     className="w-9 h-9"
                   />
-                ) : (
-                  <div className="w-9 h-9 flex items-center justify-center text-muted-foreground">?</div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-2">
+                  <span className="text-xl text-gray-400">?</span>
+                </div>
+              )}
               <div className="text-sm text-center">{opponentName || 'Waiting...'}</div>
               {opponentName && <div className="text-xl font-bold">{playerSymbol === 'X' ? 'O' : 'X'}</div>}
             </div>
