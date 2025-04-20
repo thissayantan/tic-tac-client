@@ -57,7 +57,7 @@ export function UserProfile({ username, avatarId = "globe", onLogout }: UserProf
       >
         <div className="h-12 w-12 rounded-full bg-white shadow-lg flex items-center justify-center overflow-hidden border-2 border-primary">
           <Image
-            src={`/${avatarId}.svg`}
+            src={`/avatars/${avatarId}.png`}
             alt={`${username}'s avatar`}
             width={40}
             height={40}
@@ -70,7 +70,7 @@ export function UserProfile({ username, avatarId = "globe", onLogout }: UserProf
         <div className="absolute top-16 left-2 z-20 bg-white dark:bg-slate-800 rounded-lg shadow-lg p-2 min-w-40 border border-muted">
           <div className="flex items-center gap-2 p-2 border-b border-muted mb-2">
             <Image
-              src={`/${avatarId}.svg`}
+              src={`/avatars/${avatarId}.png`}
               alt={`${username}'s avatar`}
               width={24}
               height={24}
