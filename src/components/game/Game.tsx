@@ -1,0 +1,88 @@
+import React, { useState } from "react";
+import { GameBoard } from "./GameBoard";
+import { Button } from "../ui/button";
+
+export function Game() {
+  // Initial empty 3x3 board
+  const [board, setBoard] = useState<(string | null)[][]>([
+    [null, null, null],
+    [null, null, null],
+    [null, null, null],
+  ]);
+  const [xIsNext, setXIsNext] = useState(true);
+
+  // Utility: check for a win
+  function calculateWinner(b: (string | null)[][]): string | null {
+    const lines = [
+      [[0, 0],[0, 1],[0, 2]],
+      [[1, 0],[1, 1],[1, 2]],
+      [[2, 0],[2, 1],[2, 2]],
+      [[0, 0],[1, 0],[2, 0]],
+      [[0, 1],[1, 1],[2, 1]],
+      [[0, 2],[1, 2],[2, 2]],
+      [[0, 0],[1, 1],[2, 2]],
+      [[0, 2],[1, 1],[2, 0]],
+    ];
+    for (const [a, b2, c] of lines) {
+      const [x1,y1]=a, [x2,y2]=b2, [x3,y3]=c;
+      const v = b[x1][y1];
+      if (v && v === b[x2][y2] && v === b[x3][y3]) {
+        return v;
+      }
+    }
+    return null;
+  }
+
+  const winner = calculateWinner(board);
+  const isDraw = !winner && board.every(row => row.every(cell => cell !== null));
+  const gameOver = !!winner || isDraw;
+
+  // Handle a cell click
+  function handleCellClick(row: number, col: number) {
+    if (gameOver || board[row][col]) return;
+    const mark = xIsNext ? "X" : "O";
+    const newBoard = board.map((r, i) =>
+      r.map((c, j) => (i === row && j === col ? mark : c))
+    );
+    setBoard(newBoard);
+    setXIsNext(!xIsNext);
+  }
+
+  // Reset to start a new game
+  function resetGame() {
+    setBoard([
+      [null, null, null],
+      [null, null, null],
+      [null, null, null],
+    ]);
+    setXIsNext(true);
+  }
+
+  return (
+    <>
+      <GameBoard
+        board={board}
+        isMyTurn={!gameOver}
+        onCellClick={handleCellClick}
+        gameOver={gameOver}
+      />
+
+      {/* End-of-game overlay */}
+      {gameOver && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 text-center">
+            <h2 className="text-2xl font-bold mb-2">
+              {winner ? `Winner: ${winner}` : "It's a Draw!"}
+            </h2>
+            <p className="mb-4 text-lg">
+              {winner
+                ? `Congratulations to ${winner}!`
+                : 'No more moves left.'}
+            </p>
+            <Button onClick={resetGame}>Play Again</Button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
