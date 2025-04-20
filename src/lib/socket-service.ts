@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useGameStore } from './store';
@@ -105,7 +107,9 @@ export function useSocketService() {
     });
 
     socket.on('game_over', (payload: { gameState: any; winner: string; draw: boolean }) => {
-      console.log('Game over payload:', payload);
+      console.log('⚡️ game_over payload:', payload);
+      const status = payload.draw ? 'draw' : (payload.winner === playerName ? 'won' : 'lost');
+      console.log(`Setting gameStatus to '${status}'`);
       // Extract board matrix (support raw array or state.cells)
       const stateObj = payload.gameState;
       const boardArr = Array.isArray(stateObj) ? stateObj : stateObj.cells;
@@ -114,8 +118,7 @@ export function useSocketService() {
       if (payload.draw) {
         updateGameStatus('draw');
       } else {
-        const won = payload.winner === playerName;
-        updateGameStatus(won ? 'won' : 'lost');
+        updateGameStatus(payload.winner === playerName ? 'won' : 'lost');
       }
     });
     
