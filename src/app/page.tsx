@@ -8,7 +8,6 @@ import { useGameStore } from "@/lib/store";
 import { useSocketService } from "@/lib/socket-service";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { UserProfile } from "@/components/UserProfile";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,15 +28,21 @@ export default function Home() {
   } = useGameStore();
   
   const { initializeSocket, createRoom, joinRoom, playerMove, restartGame, cleanup, disconnect } = useSocketService();
+  const router = useRouter();
   
+  // Initialize socket connection once on mount, cleanup on unmount
   useEffect(() => {
-    // Initialize socket connection when component mounts
     initializeSocket();
-    
-    // Cleanup when component unmounts
     return () => cleanup();
   }, []);
   
+  // Reflect roomId in URL for deep linking without reload
+  useEffect(() => {
+    if (roomId) {
+      window.history.replaceState(null, '', `/?room=${roomId}`);
+    }
+  }, [roomId]);
+
   const handleCreateRoom = (name: string, avatarId: string) => {
     setIsLoading(true);
     setPlayerAvatar(avatarId);
@@ -98,17 +103,10 @@ export default function Home() {
       isLoading={isLoading}
     />;
   }
-  
+
   // Game lobby and game screen
   return (
     <div className="flex flex-col items-center w-full max-w-4xl mx-auto min-h-screen pt-4 px-4 relative">
-      {/* User profile in top left corner */}
-      <UserProfile 
-        username={playerName || 'Player'} 
-        avatarId={playerAvatar}
-        onLogout={handleLogout}
-      />
-      
       <div className="flex flex-col md:flex-row items-start gap-6 mt-12 w-full">
         <div className="flex-1 flex justify-center">
           <GameBoard 
@@ -123,10 +121,10 @@ export default function Home() {
             currentPlayer={currentTurn === playerSymbol ? "Your turn" : "Opponent's turn"}
             playerSymbol={playerSymbol || '-'}
             playerAvatar={playerAvatar}
-            opponentName={opponentName}
-            opponentAvatar={opponentAvatar}
+            opponentName={opponentName || undefined}
+            opponentAvatar={opponentAvatar || undefined}
             gameStatus={gameStatus}
-            roomCode={roomId}
+            roomCode={roomId || undefined}
           />
           
           {(gameStatus === 'won' || gameStatus === 'lost' || gameStatus === 'draw') && (
