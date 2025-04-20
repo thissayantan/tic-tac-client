@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { GameBoard } from "@/components/game/GameBoard";
 import { GameStatus } from "@/components/game/GameStatus";
@@ -12,8 +11,8 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [playerAvatar, setPlayerAvatar] = useState("globe");
-  
-  const { 
+
+  const {
     connected,
     connectionError,
     roomId,
@@ -26,114 +25,97 @@ export default function Home() {
     gameStatus,
     resetGame
   } = useGameStore();
-  
+
   const { initializeSocket, createRoom, joinRoom, playerMove, restartGame, cleanup, disconnect } = useSocketService();
   const router = useRouter();
-  
-  // Initialize socket connection once on mount, cleanup on unmount
+
+  // establish socket once
   useEffect(() => {
     initializeSocket();
     return () => cleanup();
   }, []);
-  
-  // Reflect roomId in URL for deep linking without reload
+
+  // deep-link room code
   useEffect(() => {
-    if (roomId) {
-      window.history.replaceState(null, '', `/?room=${roomId}`);
-    }
+    if (roomId) window.history.replaceState(null, '', `/?room=${roomId}`);
   }, [roomId]);
 
-  const handleCreateRoom = (name: string, avatarId: string) => {
+  const handleCreateRoom = (name: string, avatar: string) => {
     setIsLoading(true);
-    setPlayerAvatar(avatarId);
-    createRoom(name, avatarId);
-    // Loading state will be updated when we receive the room:joined event
+    setPlayerAvatar(avatar);
+    createRoom(name, avatar);
   };
-  
-  const handleJoinRoom = (roomId: string, name: string, avatarId: string) => {
+
+  const handleJoinRoom = (code: string, name: string, avatar: string) => {
     setIsLoading(true);
-    setPlayerAvatar(avatarId);
-    joinRoom(roomId, name, avatarId);
-    // Loading state will be updated when we receive the room:joined event
+    setPlayerAvatar(avatar);
+    joinRoom(code, name, avatar);
   };
-  
-  const handleLogout = () => {
-    disconnect();
-    resetGame();
-    // No need to redirect since we've removed the auth system
-  };
-  
-  const handleCellClick = (row: number, col: number) => {
-    playerMove(row, col);
-  };
-  
-  const handlePlayAgain = () => {
-    // Call the server to restart the game
-    restartGame();
-    // Local state reset will be handled by the game_restarted event handler
-  };
-  
-  // Show error if connection failed
-  if (connectionError) {
-    return (
-      <div className="text-center p-8 max-w-md mx-auto">
-        <h2 className="text-xl font-bold text-red-500 mb-4">Connection Error</h2>
-        <p className="mb-4">{connectionError}</p>
-        <Button onClick={() => window.location.reload()}>
-          Retry Connection
-        </Button>
-      </div>
-    );
-  }
-  
-  // Show loading state during initial connection
-  if (!connected && !connectionError) {
-    return (
-      <div className="text-center p-8">
-        <p>Connecting to server...</p>
-      </div>
-    );
-  }
-  
-  // Show room join UI if not in a room
+
+  const handleCellClick = (r: number, c: number) => playerMove(r, c);
+  const handlePlayAgain = () => restartGame();
+
+  const isPlaying = gameStatus === 'playing';
+  const isEnd = ['won', 'lost', 'draw'].includes(gameStatus);
+
+  if (connectionError) return (
+    <div className="text-center p-8 max-w-md mx-auto">
+      <h2 className="text-xl font-bold text-red-500 mb-4">Connection Error</h2>
+      <p className="mb-4">{connectionError}</p>
+      <Button onClick={() => window.location.reload()}>Retry</Button>
+    </div>
+  );
+
+  if (!connected) return <div className="text-center p-8">Connecting...</div>;
+
   if (gameStatus === 'lobby') {
-    return <RoomJoin 
-      onCreateRoom={handleCreateRoom} 
-      onJoinRoom={handleJoinRoom}
-      isLoading={isLoading}
-    />;
+    return (
+      <RoomJoin
+        onCreateRoom={handleCreateRoom}
+        onJoinRoom={handleJoinRoom}
+        isLoading={isLoading}
+      />
+    );
   }
 
-  // Game lobby and game screen
   return (
-    <div className="flex flex-col items-center w-full max-w-4xl mx-auto min-h-screen pt-4 px-4 relative">
-      <div className="flex flex-col md:flex-row items-start gap-6 mt-12 w-full">
-        <div className="flex-1 flex justify-center">
-          <GameBoard 
-            board={board} 
-            isMyTurn={currentTurn === playerSymbol && gameStatus === 'playing'}
-            onCellClick={handleCellClick} 
-          />
-        </div>
-        
-        <div className="w-full md:w-80">
-          <GameStatus 
-            currentPlayer={currentTurn === playerSymbol ? "Your turn" : "Opponent's turn"}
-            playerSymbol={playerSymbol || '-'}
-            playerAvatar={playerAvatar}
-            opponentName={opponentName || undefined}
-            opponentAvatar={opponentAvatar || undefined}
-            gameStatus={gameStatus}
-            roomCode={roomId || undefined}
-          />
-          
-          {(gameStatus === 'won' || gameStatus === 'lost' || gameStatus === 'draw') && (
-            <Button className="mt-4 w-full" onClick={handlePlayAgain}>
-              Play Again
-            </Button>
-          )}
-        </div>
+    <>
+      <div className="flex flex-col md:flex-row items-start gap-6">
+        <GameBoard
+          board={board}
+          isMyTurn={isPlaying && currentTurn === playerSymbol}
+          onCellClick={handleCellClick}
+          gameOver={!isPlaying}
+        />
+        <GameStatus
+          currentPlayer={currentTurn === playerSymbol ? "Your turn" : "Opponent's turn"}
+          playerSymbol={playerSymbol || '-'}
+          playerAvatar={playerAvatar}
+          opponentName={opponentName || undefined}
+          opponentAvatar={opponentAvatar || undefined}
+          gameStatus={gameStatus}
+          roomCode={roomId || undefined}
+        />
       </div>
-    </div>
+
+      {/* End-game overlay */}
+      {isEnd && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 text-center">
+            <h2 className="text-2xl font-bold mb-2">
+              {gameStatus === 'won' ? 'You Won!' : gameStatus === 'lost' ? 'You Lost!' : 'It\'s a Draw!'}
+            </h2>
+            <p className="mb-4 text-lg">
+              {gameStatus === 'won'
+                ? 'Congratulations!'
+                : gameStatus === 'lost'
+                ? 'Better luck next time.'
+                : 'No more moves.'}
+            </p>
+            <Button onClick={handlePlayAgain}>Play Again</Button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
