@@ -48,7 +48,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   roomId: null,
   playerName: '',
   playerSymbol: null,
-  playerAvatar: 'globe',
+  playerAvatar: 'cat',
   opponentName: null,
   opponentAvatar: null,
   board: initialBoard,
@@ -70,8 +70,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setPlayerInfo: (symbol, opponentName, opponentAvatar) => set({ 
     playerSymbol: symbol,
     opponentName,
-    opponentAvatar,
-    gameStatus: 'playing'
+    opponentAvatar
   }),
   
   updateBoard: (board) => set({ board }),
