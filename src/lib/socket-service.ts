@@ -110,23 +110,24 @@ export function useSocketService() {
     });
 
     socket.on('game_over', (payload: { gameState: any; winner: string; draw: boolean }) => {
+      // Handle game over with proper winner mapping
       console.log('⚡️ game_over payload:', payload);
-      // Track winner or clear on draw
+      const state = useGameStore.getState();
+      // Determine own server role from symbol
+      const myRole = state.playerSymbol === 'X' ? PLAYER_ROLES.PLAYER_X : PLAYER_ROLES.PLAYER_O;
       if (payload.draw) {
         setWinnerName(null);
+        updateGameStatus('draw');
       } else {
-        setWinnerName(payload.winner);
+        // Use actual player names for winnerName
+        const winnerNameStr = payload.winner === myRole ? state.playerName : state.opponentName;
+        setWinnerName(winnerNameStr || null);
+        updateGameStatus(payload.winner === myRole ? 'won' : 'lost');
       }
       // Extract board matrix (support raw array or state.cells)
       const stateObj = payload.gameState;
       const boardArr = Array.isArray(stateObj) ? stateObj : stateObj.cells;
       updateBoard(boardArr);
-      // Set end-game status
-      if (payload.draw) {
-        updateGameStatus('draw');
-      } else {
-        updateGameStatus(payload.winner === playerName ? 'won' : 'lost');
-      }
     });
     
     socket.on('game_restarted', ({ board, currentPlayer }) => {
