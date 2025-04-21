@@ -24,7 +24,9 @@ export function useSocketService() {
     updateBoard, 
     updateTurn, 
     updateGameStatus,
+    setWinnerName,
     playerName,
+    roomId,
     makeMove
   } = useGameStore();
 
@@ -91,7 +93,8 @@ export function useSocketService() {
       // Map currentPlayer to 'X' or 'O'
       const turn = payload.currentPlayer === PLAYER_ROLES.PLAYER_X ? 'X' : 'O';
       updateTurn(turn);
-      // Set game status to playing
+      // Clear previous winner and set game status to playing
+      setWinnerName(null);
       updateGameStatus('playing');
     });
 
@@ -108,8 +111,12 @@ export function useSocketService() {
 
     socket.on('game_over', (payload: { gameState: any; winner: string; draw: boolean }) => {
       console.log('⚡️ game_over payload:', payload);
-      const status = payload.draw ? 'draw' : (payload.winner === playerName ? 'won' : 'lost');
-      console.log(`Setting gameStatus to '${status}'`);
+      // Track winner or clear on draw
+      if (payload.draw) {
+        setWinnerName(null);
+      } else {
+        setWinnerName(payload.winner);
+      }
       // Extract board matrix (support raw array or state.cells)
       const stateObj = payload.gameState;
       const boardArr = Array.isArray(stateObj) ? stateObj : stateObj.cells;
@@ -130,7 +137,8 @@ export function useSocketService() {
         [null, null, null]
       ]);
       
-      // Reset to playing state
+      // Clear winner and set game status to playing
+      setWinnerName(null);
       updateGameStatus('playing');
       
       // Update turn information
@@ -236,19 +244,28 @@ export function useSocketService() {
     }
   };
 
-  // Restart game functionality
+  // Restart game functionality (emit with current roomId)
   const restartGame = () => {
     const socket = socketRef.current;
-    if (!socket) return;
+    if (!socket || !roomId) return;
     
-    socket.emit('restart_game', {}, (response: any) => {
+    socket.emit('restart_game', { roomId }, (response: any) => {
       if (response.error) {
         console.error('Restart error:', response.error);
         setConnectionError(response.error);
         return;
       }
-      
       console.log('Game restarted:', response);
+      // clear previous winner
+      setWinnerName(null);
+      // reset UI to new game state
+      updateBoard([
+        [null, null, null],
+        [null, null, null],
+        [null, null, null]
+      ]);
+      updateTurn('X');
+      updateGameStatus('playing');
     });
   };
   
