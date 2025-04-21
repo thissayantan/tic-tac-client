@@ -1,6 +1,6 @@
 "use client";
-import Confetti from 'react-confetti';
-import { useEffect, useState } from 'react';
+import Confetti from "react-confetti";
+import { useEffect, useState } from "react";
 import { GameBoard } from "@/components/game/GameBoard";
 import { GameStatus } from "@/components/game/GameStatus";
 import { RoomJoin } from "@/components/game/RoomJoin";
@@ -26,10 +26,18 @@ export default function Home() {
     currentTurn,
     gameStatus,
     resetGame,
-    winnerName
+    winnerName,
   } = useGameStore();
 
-  const { initializeSocket, createRoom, joinRoom, playerMove, restartGame, cleanup, disconnect } = useSocketService();
+  const {
+    initializeSocket,
+    createRoom,
+    joinRoom,
+    playerMove,
+    restartGame,
+    cleanup,
+    disconnect,
+  } = useSocketService();
   const router = useRouter();
 
   // establish socket once
@@ -40,14 +48,15 @@ export default function Home() {
 
   // deep-link room code
   useEffect(() => {
-    if (roomId) window.history.replaceState(null, '', `/?room=${roomId}`);
+    if (roomId) window.history.replaceState(null, "", `/?room=${roomId}`);
   }, [roomId]);
 
   useEffect(() => {
-    const update = () => setWindowDim({ width: window.innerWidth, height: window.innerHeight });
+    const update = () =>
+      setWindowDim({ width: window.innerWidth, height: window.innerHeight });
     update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
 
   const handleCreateRoom = (name: string, avatar: string) => {
@@ -66,23 +75,26 @@ export default function Home() {
   const handlePlayAgain = () => restartGame();
 
   // Determine if current player won or lost
-  const isPlaying = gameStatus === 'playing';
-  const isWinner = gameStatus === 'won';
-  const isLoser = gameStatus === 'lost';
-  const isDraw = gameStatus === 'draw';
+  const isPlaying = gameStatus === "playing";
+  const isWinner = gameStatus === "won";
+  const isLoser = gameStatus === "lost";
+  const isDraw = gameStatus === "draw";
   const isEnd = isWinner || isLoser || isDraw;
 
-  if (connectionError) return (
-    <div className="text-center p-8 max-w-md mx-auto">
-      <h2 className="text-xl font-bold text-red-500 mb-4">Connection Error</h2>
-      <p className="mb-4">{connectionError}</p>
-      <Button onClick={() => window.location.reload()}>Retry</Button>
-    </div>
-  );
+  if (connectionError)
+    return (
+      <div className="text-center p-8 max-w-md mx-auto">
+        <h2 className="text-xl font-bold text-red-500 mb-4">
+          Connection Error
+        </h2>
+        <p className="mb-4">{connectionError}</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
 
   if (!connected) return <div className="text-center p-8">Connecting...</div>;
 
-  if (gameStatus === 'lobby') {
+  if (gameStatus === "lobby") {
     return (
       <RoomJoin
         onCreateRoom={handleCreateRoom}
@@ -102,8 +114,10 @@ export default function Home() {
           gameOver={!isPlaying}
         />
         <GameStatus
-          currentPlayer={currentTurn === playerSymbol ? "Your turn" : "Opponent's turn"}
-          playerSymbol={playerSymbol || '-'}
+          currentPlayer={
+            currentTurn === playerSymbol ? "Your turn" : "Opponent's turn"
+          }
+          playerSymbol={playerSymbol || "-"}
           playerAvatar={playerAvatar}
           opponentName={opponentName || undefined}
           opponentAvatar={opponentAvatar || undefined}
@@ -115,32 +129,39 @@ export default function Home() {
       {/* End-game overlay */}
       {isEnd && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          {isWinner && <Confetti width={windowDim.width} height={windowDim.height} recycle={false} />}
+          {isWinner && (
+            <Confetti
+              width={windowDim.width}
+              height={windowDim.height}
+              recycle={false}
+            />
+          )}
           <div className="bg-white text-black rounded-lg p-6 text-center max-w-sm mx-auto">
-          {isLoser && <div className="text-9xl animate-bounce mb-4">😢</div>}
-          {isWinner && <div className="text-9xl animate-bounce mb-4">🥳</div>}
+            {isLoser && <div className="text-9xl animate-bounce mb-4">😢</div>}
+            {isWinner && <div className="text-9xl animate-bounce mb-4">🥳</div>}
             <h2 className="text-2xl font-bold mb-2">
               {isDraw
                 ? "It's a Draw!"
                 : isWinner
                 ? `Congratulations ${playerName}`
-                : 'You Lost'}
+                : "You Lost"}
             </h2>
             <p className="mb-4 text-lg">
               {isDraw
-                ? 'No more moves.'
+                ? "No more moves."
                 : isWinner
-                ? 'you have won'
-                : 'better luck next time.'}
+                ? "you have won"
+                : "better luck next time."}
             </p>
             <div className="flex justify-center gap-4">
-              <Button onClick={handlePlayAgain} autoFocus>Play Again</Button>
-              <Button 
-                variant="secondary" 
+              <Button variant="secondary" onClick={handlePlayAgain} autoFocus>
+                Play Again
+              </Button>
+              <Button
                 onClick={() => {
                   // Try window.close() first
                   const closeAttempt = window.close();
-                  
+
                   // If window.close() doesn't work (returns undefined or false), redirect to blank page
                   if (closeAttempt === undefined || closeAttempt === false) {
                     window.location.href = "about:blank";
