@@ -66,23 +66,6 @@ export function Game() {
         onCellClick={handleCellClick}
         gameOver={gameOver}
       />
-
-      {/* End-of-game overlay */}
-      {gameOver && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 text-center">
-            <h2 className="text-2xl font-bold mb-2">
-              {winner ? `Winner: ${winner}` : "It's a Draw!"}
-            </h2>
-            <p className="mb-4 text-lg">
-              {winner
-                ? `Congratulations to ${winner}!`
-                : 'No more moves left.'}
-            </p>
-            <Button onClick={resetGame}>Play Again</Button>
-          </div>
-        </div>
-      )}
     </>
   );
 }
