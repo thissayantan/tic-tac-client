@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { GameBoard } from "@/components/game/GameBoard";
 import { GameStatus } from "@/components/game/GameStatus";
 import { RoomJoin } from "@/components/game/RoomJoin";
+import { WinnerCelebration } from "@/components/game/WinnerCelebration";
 import { useGameStore } from "@/lib/store";
 import { useSocketService } from "@/lib/socket-service";
 import { Button } from "@/components/ui/button";
@@ -101,25 +102,28 @@ export default function Home() {
 
       {/* End-game overlay */}
       {isEnd && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white text-black rounded-lg p-6 text-center">
-            <h2 className="text-2xl font-bold mb-2">
-              {gameStatus === 'draw'
-                ? "It's a Draw!"
-                : winnerName
-                ? `Winner: ${winnerName}`
-                : ''}
-            </h2>
-            <p className="mb-4 text-lg">
-              {gameStatus === 'draw'
-                ? 'No more moves.'
-                : winnerName
-                ? `Congratulations, ${winnerName}!`
-                : ''}
-            </p>
-            <Button onClick={handlePlayAgain}>Play Again</Button>
+        <>
+          <WinnerCelebration isVisible={gameStatus === 'won'} />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white text-black rounded-lg p-6 text-center">
+              <h2 className="text-2xl font-bold mb-2">
+                {gameStatus === 'draw'
+                  ? "It's a Draw!"
+                  : winnerName
+                  ? `Winner: ${winnerName}`
+                  : ''}
+              </h2>
+              <p className="mb-4 text-lg">
+                {gameStatus === 'draw'
+                  ? 'No more moves.'
+                  : winnerName
+                  ? `Congratulations, ${winnerName}!`
+                  : ''}
+              </p>
+              <Button onClick={handlePlayAgain}>Play Again</Button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );
