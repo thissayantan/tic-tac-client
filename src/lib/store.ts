@@ -20,6 +20,7 @@ interface GameState {
   board: CellValue[][];
   currentTurn: 'X' | 'O';
   gameStatus: GameStatus;
+  winnerName: string | null;
   
   // Actions
   setConnected: (connected: boolean) => void;
@@ -30,6 +31,7 @@ interface GameState {
   updateTurn: (turn: 'X' | 'O') => void;
   updateGameStatus: (status: GameStatus) => void;
   resetGame: () => void;
+  setWinnerName: (name: string | null) => void;
   makeMove: (row: number, col: number) => boolean;
 }
 
@@ -54,6 +56,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   board: initialBoard,
   currentTurn: 'X',  // X always goes first
   gameStatus: 'lobby',
+  winnerName: null,
   
   // Actions
   setConnected: (connected) => set({ connected }),
@@ -87,9 +90,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     playerSymbol: null,
     opponentName: null,
     opponentAvatar: null,
+    winnerName: null,
     // Keep playerName and playerAvatar for convenience
   }),
-  
+  setWinnerName: (name) => set({ winnerName: name }),
   makeMove: (row, col) => {
     const state = get();
     
