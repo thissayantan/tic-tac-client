@@ -135,7 +135,22 @@ export default function Home() {
             </p>
             <div className="flex justify-center gap-4">
               <Button onClick={handlePlayAgain} autoFocus>Play Again</Button>
-              <Button variant="secondary" onClick={() => window.close()}>Quit</Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => {
+                  // Try window.close() first
+                  const closeAttempt = window.close();
+                  
+                  // If window.close() doesn't work (returns undefined or false), redirect to blank page
+                  if (closeAttempt === undefined || closeAttempt === false) {
+                    window.location.href = "about:blank";
+                    // As a fallback, try closing again after redirect
+                    setTimeout(() => window.close(), 300);
+                  }
+                }}
+              >
+                Quit
+              </Button>
             </div>
           </div>
         </div>
