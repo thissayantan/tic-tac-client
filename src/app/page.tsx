@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import Confetti from 'react-confetti';
+import { useEffect, useState } from 'react';
 import { GameBoard } from "@/components/game/GameBoard";
 import { GameStatus } from "@/components/game/GameStatus";
 import { RoomJoin } from "@/components/game/RoomJoin";
@@ -11,6 +12,7 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [playerAvatar, setPlayerAvatar] = useState("globe");
+  const [windowDim, setWindowDim] = useState({ width: 0, height: 0 });
 
   const {
     connected,
@@ -41,6 +43,13 @@ export default function Home() {
     if (roomId) window.history.replaceState(null, '', `/?room=${roomId}`);
   }, [roomId]);
 
+  useEffect(() => {
+    const update = () => setWindowDim({ width: window.innerWidth, height: window.innerHeight });
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
   const handleCreateRoom = (name: string, avatar: string) => {
     setIsLoading(true);
     setPlayerAvatar(avatar);
@@ -56,8 +65,12 @@ export default function Home() {
   const handleCellClick = (r: number, c: number) => playerMove(r, c);
   const handlePlayAgain = () => restartGame();
 
+  // Determine if current player won or lost
   const isPlaying = gameStatus === 'playing';
-  const isEnd = ['won', 'lost', 'draw'].includes(gameStatus);
+  const isWinner = gameStatus === 'won';
+  const isLoser = gameStatus === 'lost';
+  const isDraw = gameStatus === 'draw';
+  const isEnd = isWinner || isLoser || isDraw;
 
   if (connectionError) return (
     <div className="text-center p-8 max-w-md mx-auto">
@@ -102,22 +115,28 @@ export default function Home() {
       {/* End-game overlay */}
       {isEnd && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white text-black rounded-lg p-6 text-center">
+          {isWinner && <Confetti width={windowDim.width} height={windowDim.height} recycle={false} />}
+          <div className="bg-white text-black rounded-lg p-6 text-center max-w-sm mx-auto">
+          {isLoser && <div className="text-9xl animate-bounce mb-4">😢</div>}
+          {isWinner && <div className="text-9xl animate-bounce mb-4">🥳</div>}
             <h2 className="text-2xl font-bold mb-2">
-              {gameStatus === 'draw'
+              {isDraw
                 ? "It's a Draw!"
-                : winnerName
-                ? `Winner: ${winnerName}`
-                : ''}
+                : isWinner
+                ? `Congratulations ${playerName}`
+                : 'You Lost'}
             </h2>
             <p className="mb-4 text-lg">
-              {gameStatus === 'draw'
+              {isDraw
                 ? 'No more moves.'
-                : winnerName
-                ? `Congratulations, ${winnerName}!`
-                : ''}
+                : isWinner
+                ? 'you have won'
+                : 'better luck next time.'}
             </p>
-            <Button onClick={handlePlayAgain}>Play Again</Button>
+            <div className="flex justify-center gap-4">
+              <Button onClick={handlePlayAgain} autoFocus>Play Again</Button>
+              <Button variant="secondary" onClick={() => window.close()}>Quit</Button>
+            </div>
           </div>
         </div>
       )}
