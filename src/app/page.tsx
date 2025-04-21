@@ -23,7 +23,8 @@ export default function Home() {
     board,
     currentTurn,
     gameStatus,
-    resetGame
+    resetGame,
+    winnerName
   } = useGameStore();
 
   const { initializeSocket, createRoom, joinRoom, playerMove, restartGame, cleanup, disconnect } = useSocketService();
@@ -101,16 +102,20 @@ export default function Home() {
       {/* End-game overlay */}
       {isEnd && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 text-center">
+          <div className="bg-white text-black rounded-lg p-6 text-center">
             <h2 className="text-2xl font-bold mb-2">
-              {gameStatus === 'won' ? 'You Won!' : gameStatus === 'lost' ? 'You Lost!' : 'It\'s a Draw!'}
+              {gameStatus === 'draw'
+                ? "It's a Draw!"
+                : winnerName
+                ? `Winner: ${winnerName}`
+                : ''}
             </h2>
             <p className="mb-4 text-lg">
-              {gameStatus === 'won'
-                ? 'Congratulations!'
-                : gameStatus === 'lost'
-                ? 'Better luck next time.'
-                : 'No more moves.'}
+              {gameStatus === 'draw'
+                ? 'No more moves.'
+                : winnerName
+                ? `Congratulations, ${winnerName}!`
+                : ''}
             </p>
             <Button onClick={handlePlayAgain}>Play Again</Button>
           </div>
