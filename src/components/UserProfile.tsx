@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
-import { AuthService } from "@/lib/auth-service";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 interface UserProfileProps {
