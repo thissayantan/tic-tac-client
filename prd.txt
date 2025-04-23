@@ -54,3 +54,19 @@
     - [ ] Ensure Join Game button activates correctly with valid room code
     - [ ] Consolidate redundant Create Game buttons
     - [ ] Add auto-join flow from shared links
+
+- [ ] Fix build errors (Weight: 4)
+  - [ ] Implement WinnerCelebration component or remove import (Weight: 1)
+  - [x] Remove broken WinnerCelebration import (Weight: 1)
+  - [ ] Fix unused variables and imports (Weight: 2)
+    - [x] components/game/Game.tsx: remove unused imports (Weight: 1)
+    - [x] components/game/GameBoard.tsx: remove unused imports (Weight: 1)
+    - [x] components/UserProfile.tsx: remove unused imports (Weight: 1)
+    - [x] auth/page.tsx: update catch blocks to log errors and remove unused imports (Weight: 1)
+    - [x] app/page.tsx: remove unused destructured variables and imports (Weight: 1)
+    - [x] components/game/RoomJoin.tsx: remove unused imports (Weight: 1)
+    - [x] hooks/useRoomJoining.js: remove unused userInfo variable (Weight: 1)
+    - [x] lib/socket-service.ts: remove unused useEffect import (Weight: 1)
+  - [ ] Fix explicit any errors in socket-service.ts (Weight: 2)
+    - [x] Remove explicit any annotation in response callbacks (Weight: 1)
+    - [x] Remove unused stateObj and stateArr in socket listeners (Weight: 1)
