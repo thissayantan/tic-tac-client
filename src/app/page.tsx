@@ -4,11 +4,9 @@ import { useEffect, useState } from "react";
 import { GameBoard } from "@/components/game/GameBoard";
 import { GameStatus } from "@/components/game/GameStatus";
 import { RoomJoin } from "@/components/game/RoomJoin";
-import { WinnerCelebration } from "@/components/game/WinnerCelebration";
 import { useGameStore } from "@/lib/store";
 import { useSocketService } from "@/lib/socket-service";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,25 +24,19 @@ export default function Home() {
     board,
     currentTurn,
     gameStatus,
-    resetGame,
-    winnerName,
   } = useGameStore();
 
-  const {
-    initializeSocket,
-    createRoom,
-    joinRoom,
-    playerMove,
-    restartGame,
-    cleanup,
-    disconnect,
-  } = useSocketService();
-  const router = useRouter();
+  const { initializeSocket, createRoom, joinRoom, playerMove, restartGame, cleanup } = useSocketService();
 
-  // establish socket once
+  // Initialize socket once on first render
   useEffect(() => {
     initializeSocket();
-    return () => cleanup();
+  }, []);
+
+  // Cleanup socket only on page/window unload, not on component unmount
+  useEffect(() => {
+    window.addEventListener('beforeunload', cleanup);
+    return () => window.removeEventListener('beforeunload', cleanup);
   }, []);
 
   // deep-link room code
