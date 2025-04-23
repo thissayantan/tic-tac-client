@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
 
@@ -17,7 +17,6 @@ export function RoomJoin({ onCreateRoom, onJoinRoom, isLoading = false }: RoomJo
   const [roomId, setRoomId] = useState("");
   const [avatarId, setAvatarId] = useState("cat");
   const [joinMode, setJoinMode] = useState<"create" | "join">("create");
-  const router = useRouter();
   const searchParams = useSearchParams();
   const avatarScrollRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -134,9 +133,11 @@ export function RoomJoin({ onCreateRoom, onJoinRoom, isLoading = false }: RoomJo
                       ? 'w-24 h-24 border-white ring-2 ring-white shadow-lg shadow-blue-500/30 animate-pulse-slow' 
                       : 'w-20 h-20 border-transparent hover:border-gray-400 transition-all'
                   }`}>
-                    <img 
-                      src={`/avatars/${avatar}.png`} 
+                    <Image
+                      src={`/avatars/${avatar}.png`}
                       alt={avatar}
+                      width={80}
+                      height={80}
                       className={`object-cover w-full h-full transition-transform duration-500 ${
                         avatarId === avatar ? 'scale-105' : 'hover:scale-110'
                       }`}
