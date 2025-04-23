@@ -7,7 +7,7 @@ import { useSocketService } from '../lib/socket-service';
  * @param {Object} userInfo Current user information
  * @returns {Object} Room joining state and methods
  */
-export default function useRoomJoining(userInfo) {
+export default function useRoomJoining() {
   const searchParams = useSearchParams();
   const roomIdFromURL = searchParams?.get('room');
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function useRoomJoining(userInfo) {
       // No room ID in URL, default to create mode
       setJoinMode('create');
     }
-  }, [roomIdFromURL]);
+  }, [roomIdFromURL, socket]);
 
   // Join the room as appropriate role
   const joinRoom = (playerInfo) => {
