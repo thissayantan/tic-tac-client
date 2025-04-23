@@ -27,11 +27,12 @@ export function GameStatus({
   gameStatus,
   roomCode
 }: GameStatusProps) {
+  // If opponent has joined but status is still waiting, treat as playing
+  const effectiveStatus = gameStatus === 'waiting' && opponentName ? 'playing' : gameStatus;
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  
-  const getStatusMessage = () => {
-    switch (gameStatus) {
+  const getStatusMessage = (status: GameStatusProps['gameStatus'] = gameStatus) => {
+    switch (status) {
       case 'waiting':
         return 'Waiting for opponent to join...';
       case 'playing':
@@ -46,9 +47,8 @@ export function GameStatus({
         return 'Game in progress';
     }
   };
-  
-  const getStatusColor = () => {
-    switch (gameStatus) {
+  const getStatusColor = (status: GameStatusProps['gameStatus'] = gameStatus) => {
+    switch (status) {
       case 'waiting': return 'text-amber-500';
       case 'playing': return 'text-blue-500';
       case 'won': return 'text-green-500';
@@ -123,29 +123,34 @@ export function GameStatus({
             
             {/* Opponent */}
             <div className="flex flex-col items-center justify-center">
-              {opponentAvatar ? (
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-pink-400 to-red-600 flex items-center justify-center mb-2">
-                  <Image
-                    src={`/avatars/${opponentAvatar}.png`}
-                    alt="Opponent avatar"
-                    width={36}
-                    height={36}
-                    className="w-9 h-9"
-                  />
-                </div>
+              {opponentName ? (
+                <>
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-pink-400 to-red-600 flex items-center justify-center mb-2">
+                    <Image
+                      src={`/avatars/${opponentAvatar || 'globe'}.png`}
+                      alt={`${opponentName}'s avatar`}
+                      width={36}
+                      height={36}
+                      className="w-9 h-9"
+                    />
+                  </div>
+                  <div className="text-sm text-center font-medium">{opponentName}</div>
+                  <div className="text-xl font-bold">{playerSymbol === 'X' ? 'O' : 'X'}</div>
+                </>
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-2">
-                  <span className="text-xl text-gray-400">?</span>
-                </div>
+                <>
+                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-2">
+                    <span className="text-xl text-gray-400">?</span>
+                  </div>
+                  <div className="text-sm text-center">Waiting...</div>
+                </>
               )}
-              <div className="text-sm text-center">{opponentName || 'Waiting...'}</div>
-              {opponentName && <div className="text-xl font-bold">{playerSymbol === 'X' ? 'O' : 'X'}</div>}
             </div>
           </div>
           
           {/* Game status message */}
-          <div className={`mt-4 text-center font-semibold ${getStatusColor()}`}>
-            {getStatusMessage()}
+          <div className={`mt-4 text-center font-semibold ${getStatusColor(effectiveStatus)}`}>
+            {getStatusMessage(effectiveStatus)}
           </div>
         </div>
       </CardContent>
