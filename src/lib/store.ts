@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 type GameStatus = 'lobby' | 'waiting' | 'playing' | 'won' | 'lost' | 'draw';
-type CellValue = 'X' | 'O' | null;
+export type CellValue = 'X' | 'O' | null;
 
 interface GameState {
   // Connection state
