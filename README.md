@@ -1,6 +1,6 @@
 # Tic‑Tac‑Toe Client
 
-A real‑time multiplayer Tic‑Tac‑Toe client built with Next.js 13, React, Tailwind CSS, and Zustand for state management.
+A real‑time multiplayer Tic‑Tac‑Toe client built with Next.js 15, React, Tailwind CSS, and Zustand for state management.
 
 ## Features
 - Real‑time gameplay via Socket.IO
