@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
 import { GameBoard } from "./GameBoard";
-import { Button } from "../ui/button";
 
 export function Game() {
   // Initial empty 3x3 board
@@ -46,16 +46,6 @@ export function Game() {
     );
     setBoard(newBoard);
     setXIsNext(!xIsNext);
-  }
-
-  // Reset to start a new game
-  function resetGame() {
-    setBoard([
-      [null, null, null],
-      [null, null, null],
-      [null, null, null],
-    ]);
-    setXIsNext(true);
   }
 
   return (
