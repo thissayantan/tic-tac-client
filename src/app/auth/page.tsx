@@ -29,8 +29,9 @@ export default function AuthPage() {
       } else {
         setError(response.error || "Login failed");
       }
-    } catch (err) {
-      setError("An unexpected error occurred");
+    } catch (error) {
+      console.error(error);
+      setError(error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }
@@ -48,8 +49,9 @@ export default function AuthPage() {
       } else {
         setError(response.error || "Registration failed");
       }
-    } catch (err) {
-      setError("An unexpected error occurred");
+    } catch (error) {
+      console.error(error);
+      setError(error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }
